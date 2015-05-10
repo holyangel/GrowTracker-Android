@@ -1,7 +1,6 @@
 package me.anon.model;
 
 import lombok.Data;
-import lombok.experimental.Accessors;
 
 /**
  * // TODO: Add class description
@@ -11,9 +10,13 @@ import lombok.experimental.Accessors;
  * @project GrowTracker
  */
 @Data
-@Accessors(prefix = {"m", ""}, chain = true)
-public class Feed extends Water
+public class EmptyAction extends Action
 {
-	private Nutrient nutrient;
-	private int mlpl; // ml per litre
+	private ActionName action;
+
+	public EmptyAction(Action.ActionName action)
+	{
+		this.setDate(System.currentTimeMillis());
+		this.setAction(action);
+	}
 }
