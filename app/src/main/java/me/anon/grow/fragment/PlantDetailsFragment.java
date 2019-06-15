@@ -20,6 +20,7 @@ import android.os.ParcelFileDescriptor;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.content.FileProvider;
 import android.support.v7.widget.CardView;
 import android.text.Html;
@@ -641,6 +642,7 @@ public class PlantDetailsFragment extends Fragment
 		catch (Exception e)
 		{
 			e.printStackTrace();
+			SnackBar.show(getActivity(), "Could not copy image from selected location", Snackbar.LENGTH_LONG, null);
 		}
 	}
 
