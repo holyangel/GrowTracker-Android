@@ -45,15 +45,23 @@ public class PlantSelectionAdapter extends RecyclerView.Adapter<PlantSelectHolde
 	{
 		this.context = context;
 
-		if (plants != null)
-		{
-			this.allPlants.addAll(plants);
-			this.plants.addAll(plants);
-		}
-
 		if (selectedIds != null)
 		{
 			this.selectedIds.addAll(selectedIds);
+		}
+
+		if (plants != null)
+		{
+			ArrayList<Plant> sorted = new ArrayList<>(plants);
+			sorted.sort((a, b) ->
+			{
+				boolean aSelected = this.selectedIds.contains(a.getId());
+				boolean bSelected = this.selectedIds.contains(b.getId());
+				if (aSelected == bSelected) return 0;
+				return aSelected ? -1 : 1;
+			});
+			this.allPlants.addAll(sorted);
+			this.plants.addAll(sorted);
 		}
 	}
 
