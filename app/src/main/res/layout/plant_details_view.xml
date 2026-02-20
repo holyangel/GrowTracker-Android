@@ -305,6 +305,28 @@
 					</LinearLayout>
 
 					<LinearLayout
+						android:id="@+id/photo_folder_container"
+						android:layout_width="match_parent"
+						android:layout_height="wrap_content"
+						android:orientation="vertical"
+						android:padding="16dp"
+						android:visibility="gone">
+
+						<TextView
+							style="@style/SubsectionTitle"
+							android:layout_width="match_parent"
+							android:layout_height="wrap_content"
+							android:text="@string/photo_folder_label" />
+
+						<TextView
+							android:id="@+id/photo_folder_path"
+							style="@style/SubsectionSubTitle"
+							android:layout_width="match_parent"
+							android:layout_height="wrap_content"
+							android:textIsSelectable="true" />
+					</LinearLayout>
+
+					<LinearLayout
 						android:layout_width="match_parent"
 						android:layout_height="wrap_content"
 						android:orientation="horizontal"

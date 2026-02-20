@@ -101,6 +101,8 @@ public class PlantDetailsFragment extends Fragment
 	@Views.InjectView(R.id.plant_date) private TextView date;
 	@Views.InjectView(R.id.plant_date_container) private View dateContainer;
 	@Views.InjectView(R.id.from_clone) private CheckBox clone;
+	@Views.InjectView(R.id.photo_folder_container) private View photoFolderContainer;
+	@Views.InjectView(R.id.photo_folder_path) private TextView photoFolderPath;
 
 	@Views.InjectView(R.id.last_feeding) private CardView lastFeeding;
 	@Views.InjectView(R.id.last_feeding_date) private TextView lastFeedingDate;
@@ -362,6 +364,13 @@ public class PlantDetailsFragment extends Fragment
 		});
 
 		strain.setText(plant.getStrain());
+
+		if (!newPlant && plant.getId() != null)
+		{
+			String folderPath = FileManager.IMAGE_PATH + plant.getId() + "/";
+			photoFolderPath.setText(folderPath);
+			photoFolderContainer.setVisibility(View.VISIBLE);
+		}
 	}
 
 	@Views.OnClick public void onFeedingClick()
