@@ -5,7 +5,9 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -41,6 +43,7 @@ public class GardenDialogFragment extends DialogFragment
 	private Garden garden;
 	private PlantSelectionAdapter adapter;
 	@Views.InjectView(R.id.name) private EditText name;
+	@Views.InjectView(R.id.search_edit_text) private EditText searchEditText;
 	@Views.InjectView(R.id.recycler_view) private RecyclerView recyclerView;
 	private OnEditGardenListener onEditGardenListener;
 
@@ -76,6 +79,17 @@ public class GardenDialogFragment extends DialogFragment
 		LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity(), RecyclerView.VERTICAL, reverse);
 		layoutManager.setStackFromEnd(reverse);
 		recyclerView.setLayoutManager(layoutManager);
+
+		searchEditText.addTextChangedListener(new TextWatcher()
+		{
+			@Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+			@Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+			@Override public void afterTextChanged(Editable s)
+			{
+				adapter.filter(s.toString());
+			}
+		});
 
 		final AlertDialog alertDialog = new AlertDialog.Builder(getActivity())
 			.setTitle(R.string.garden)

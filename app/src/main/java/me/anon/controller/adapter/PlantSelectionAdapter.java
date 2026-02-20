@@ -21,6 +21,7 @@ import me.anon.view.PlantSelectHolder;
 
 public class PlantSelectionAdapter extends RecyclerView.Adapter<PlantSelectHolder>
 {
+	private ArrayList<Plant> allPlants = new ArrayList<>();
 	private ArrayList<Plant> plants = new ArrayList<>();
 	private ArrayList<String> selectedIds = new ArrayList<>();
 	private Context context;
@@ -35,21 +36,49 @@ public class PlantSelectionAdapter extends RecyclerView.Adapter<PlantSelectHolde
 		return selectedIds;
 	}
 
+	public ArrayList<Plant> getAllPlants()
+	{
+		return allPlants;
+	}
+
 	public PlantSelectionAdapter(@Nullable ArrayList<Plant> plants, @Nullable ArrayList<String> selectedIds, Context context)
 	{
-		this.plants = plants;
-		this.selectedIds = selectedIds;
 		this.context = context;
 
-		if (this.plants == null)
+		if (plants != null)
 		{
-			this.plants = new ArrayList<>();
+			this.allPlants.addAll(plants);
+			this.plants.addAll(plants);
 		}
 
-		if (this.selectedIds == null)
+		if (selectedIds != null)
 		{
-			this.selectedIds = new ArrayList<>();
+			this.selectedIds.addAll(selectedIds);
 		}
+	}
+
+	public void filter(String query)
+	{
+		plants.clear();
+		String lowerQuery = query.toLowerCase().trim();
+
+		if (lowerQuery.isEmpty())
+		{
+			plants.addAll(allPlants);
+		}
+		else
+		{
+			for (Plant plant : allPlants)
+			{
+				if (plant.getName().toLowerCase().contains(lowerQuery)
+					|| (plant.getStrain() != null && plant.getStrain().toLowerCase().contains(lowerQuery)))
+				{
+					plants.add(plant);
+				}
+			}
+		}
+
+		notifyDataSetChanged();
 	}
 
 	public void setSelectedIds(ArrayList<String> selectedIds)
