@@ -272,17 +272,24 @@ public class FileManager
 	{
 		try
 		{
-			byte[] buffer = new byte[1024];
+			byte[] buffer = new byte[8192];
 			int read;
 
 			while ((read = src.read(buffer)) != -1)
 			{
 				dest.write(buffer, 0, read);
 			}
+
+			dest.flush();
 		}
 		catch (IOException e)
 		{
 			e.printStackTrace();
+		}
+		finally
+		{
+			try { src.close(); } catch (IOException ignored) {}
+			try { dest.close(); } catch (IOException ignored) {}
 		}
 	}
 
@@ -317,6 +324,7 @@ public class FileManager
 			{
 				OutputStreamWriter fos = new OutputStreamWriter(new FileOutputStream(file));
 				fos.write((String)contents);
+				fos.flush();
 				fos.close();
 			}
 			else
@@ -330,6 +338,44 @@ public class FileManager
 		catch (IOException e)
 		{
 			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Writes data to a file atomically by writing to a temporary file first,
+	 * then renaming. This prevents corruption from interrupted writes.
+	 *
+	 * @param filePath The absolute path to the target file
+	 * @param contents The string data to write
+	 * @return true if the write succeeded
+	 */
+	public boolean writeFileAtomically(String filePath, String contents)
+	{
+		File target = new File(filePath);
+		File temp = new File(filePath + ".tmp");
+
+		try
+		{
+			FileOutputStream fos = new FileOutputStream(temp);
+			OutputStreamWriter writer = new OutputStreamWriter(fos);
+			writer.write(contents);
+			writer.flush();
+			fos.getFD().sync();
+			writer.close();
+
+			if (temp.length() == 0)
+			{
+				temp.delete();
+				return false;
+			}
+
+			return temp.renameTo(target);
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+			temp.delete();
+			return false;
 		}
 	}
 

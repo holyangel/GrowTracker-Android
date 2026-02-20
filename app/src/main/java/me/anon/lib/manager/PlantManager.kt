@@ -154,10 +154,17 @@ class PlantManager private constructor()
 			return false
 		}
 
-		// redundancy check
-		if (File(FILES_DIR, "/plants.$fileExt").lastModified() < File(FILES_DIR, "/plants.$fileExt.bak").lastModified())
+		// redundancy check — only restore from .bak if the main file is missing/empty and .bak is valid
+		val mainFile = File(FILES_DIR, "/plants.$fileExt")
+		val bakFile = File("$FILES_DIR/plants.$fileExt.bak")
+		if ((!mainFile.exists() || mainFile.length() == 0L) && bakFile.exists() && bakFile.length() > 0)
 		{
-			FileManager.getInstance().copyFile("$FILES_DIR/plants.$fileExt.bak", "$FILES_DIR/plants.$fileExt")
+			FileManager.getInstance().copyFile(bakFile.absolutePath, mainFile.absolutePath)
+		}
+		else if (mainFile.exists() && mainFile.length() > 0 && bakFile.exists() && bakFile.length() > 0
+			&& mainFile.lastModified() < bakFile.lastModified())
+		{
+			FileManager.getInstance().copyFile(bakFile.absolutePath, mainFile.absolutePath)
 		}
 
 		if (FileManager.getInstance().fileExists("$FILES_DIR/plants.$fileExt"))
@@ -234,11 +241,16 @@ class PlantManager private constructor()
 				{
 					override fun doInBackground(vararg params: Void?): Int
 					{
-						FileManager.getInstance().copyFile("$FILES_DIR/plants.$fileExt", "$FILES_DIR/plants.$fileExt.bak")
-
 						try
 						{
-							var outstream: OutputStream
+							val targetPath = "$FILES_DIR/plants.$fileExt"
+							val tempPath = "$FILES_DIR/plants.$fileExt.tmp"
+							val output = MoshiHelper.toJson(plants, Types.newParameterizedType(ArrayList::class.java, Plant::class.java))
+
+							if (output.isNullOrEmpty())
+							{
+								return 1
+							}
 
 							if (MainApplication.isEncrypted())
 							{
@@ -247,18 +259,37 @@ class PlantManager private constructor()
 									return 1
 								}
 
-								outstream = EncryptOutputStream(MainApplication.getKey(), File("$FILES_DIR/plants.$fileExt"))
+								val outstream = EncryptOutputStream(MainApplication.getKey(), File(tempPath))
+								val writer = BufferedWriter(OutputStreamWriter(outstream))
+								writer.write(output)
+								writer.flush()
+								writer.close()
 							}
 							else
 							{
-								outstream = FileOutputStream(File("$FILES_DIR/plants.$fileExt"))
+								val fos = FileOutputStream(File(tempPath))
+								val writer = BufferedWriter(OutputStreamWriter(fos))
+								writer.write(output)
+								writer.flush()
+								fos.fd.sync()
+								writer.close()
 							}
 
-							val output = MoshiHelper.toJson(plants, Types.newParameterizedType(ArrayList::class.java, Plant::class.java))
-							val writer = BufferedWriter(OutputStreamWriter(outstream))
-							writer.write(output)
-							writer.flush()
-							writer.close()
+							val tempFile = File(tempPath)
+							if (tempFile.length() == 0L)
+							{
+								tempFile.delete()
+								return 1
+							}
+
+							// Temp write succeeded — now safe to update .bak and rename
+							val target = File(targetPath)
+							val bak = File("$FILES_DIR/plants.$fileExt.bak")
+							if (target.exists() && target.length() > 0)
+							{
+								FileManager.getInstance().copyFile(targetPath, bak.absolutePath)
+							}
+							tempFile.renameTo(target)
 						}
 						catch (e: Exception)
 						{

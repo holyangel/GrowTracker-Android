@@ -87,28 +87,58 @@ class ScheduleManager private constructor()
 	fun save()
 	{
 		synchronized(schedules) {
-			if (MainApplication.isEncrypted())
+			val targetPath = "$FILES_DIR/schedules.$fileExt"
+			val tempPath = "$targetPath.tmp"
+
+			try
 			{
-				if (TextUtils.isEmpty(MainApplication.getKey()))
+				val json = MoshiHelper.toJson(schedules, Types.newParameterizedType(ArrayList::class.java, FeedingSchedule::class.java))
+				if (json.isNullOrEmpty()) return
+
+				if (MainApplication.isEncrypted())
 				{
+					if (TextUtils.isEmpty(MainApplication.getKey()))
+					{
+						return
+					}
+
+					FileManager.getInstance().writeFile(tempPath, EncryptionHelper.encrypt(MainApplication.getKey(), json))
+				}
+				else
+				{
+					FileManager.getInstance().writeFile(tempPath, json)
+				}
+
+				val tempFile = File(tempPath)
+				if (!tempFile.exists() || tempFile.length() == 0L)
+				{
+					tempFile.delete()
 					return
 				}
 
-				FileManager.getInstance().writeFile("$FILES_DIR/schedules.${fileExt}", EncryptionHelper.encrypt(MainApplication.getKey(), MoshiHelper.toJson(schedules, Types.newParameterizedType(ArrayList::class.java, FeedingSchedule::class.java))))
+				// Back up current good file, then rename temp to target
+				val target = File(targetPath)
+				if (target.exists() && target.length() > 0)
+				{
+					FileManager.getInstance().copyFile(targetPath, "$targetPath.bak")
+				}
+				tempFile.renameTo(target)
 			}
-			else
+			catch (e: Exception)
 			{
-				FileManager.getInstance().writeFile("$FILES_DIR/schedules.${fileExt}", MoshiHelper.toJson(schedules, Types.newParameterizedType(ArrayList::class.java, FeedingSchedule::class.java)))
-			}
+				e.printStackTrace()
 
-			if (File("$FILES_DIR/schedules.${fileExt}").length() == 0L || !File("$FILES_DIR/schedules.${fileExt}").exists())
-			{
-				Toast.makeText(context, "There was a fatal problem saving the schedule data, please backup this data", Toast.LENGTH_LONG).show()
-				val sendData = MoshiHelper.toJson(schedules, Types.newParameterizedType(ArrayList::class.java, FeedingSchedule::class.java))
-				val share = Intent(Intent.ACTION_SEND)
-				share.type = "text/plain"
-				share.putExtra(Intent.EXTRA_TEXT, "== WARNING : PLEASE BACK UP THIS DATA == \r\n\r\n $sendData")
-				context.startActivity(share)
+				if (File(targetPath).length() == 0L || !File(targetPath).exists())
+				{
+					Toast.makeText(context, "There was a fatal problem saving the schedule data, please backup this data", Toast.LENGTH_LONG).show()
+					val sendData = MoshiHelper.toJson(schedules, Types.newParameterizedType(ArrayList::class.java, FeedingSchedule::class.java))
+					val share = Intent(Intent.ACTION_SEND)
+					share.type = "text/plain"
+					share.putExtra(Intent.EXTRA_TEXT, "== WARNING : PLEASE BACK UP THIS DATA == \r\n\r\n $sendData")
+					context.startActivity(share)
+				}
+
+				return
 			}
 		}
 	}

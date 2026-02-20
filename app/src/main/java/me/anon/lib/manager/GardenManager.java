@@ -92,28 +92,56 @@ public class GardenManager
 	{
 		synchronized (mGardens)
 		{
-			if (MainApplication.isEncrypted())
+			String targetPath = FILES_DIR + "/gardens." + getFileExt();
+			String tempPath = targetPath + ".tmp";
+
+			try
 			{
-				if (TextUtils.isEmpty(MainApplication.getKey()))
+				String json = MoshiHelper.toJson(mGardens, Types.newParameterizedType(ArrayList.class, Garden.class));
+				if (json == null || json.isEmpty()) return;
+
+				if (MainApplication.isEncrypted())
 				{
+					if (TextUtils.isEmpty(MainApplication.getKey()))
+					{
+						return;
+					}
+
+					FileManager.getInstance().writeFile(tempPath, EncryptionHelper.encrypt(MainApplication.getKey(), json));
+				}
+				else
+				{
+					FileManager.getInstance().writeFile(tempPath, json);
+				}
+
+				File tempFile = new File(tempPath);
+				if (!tempFile.exists() || tempFile.length() == 0)
+				{
+					tempFile.delete();
 					return;
 				}
 
-				FileManager.getInstance().writeFile(FILES_DIR + "/gardens." + getFileExt(), EncryptionHelper.encrypt(MainApplication.getKey(), MoshiHelper.toJson(mGardens, Types.newParameterizedType(ArrayList.class, Garden.class))));
+				// Back up current good file, then rename temp to target
+				File target = new File(targetPath);
+				if (target.exists() && target.length() > 0)
+				{
+					FileManager.getInstance().copyFile(targetPath, targetPath + ".bak");
+				}
+				tempFile.renameTo(target);
 			}
-			else
+			catch (Exception e)
 			{
-				FileManager.getInstance().writeFile(FILES_DIR + "/gardens." + getFileExt(), MoshiHelper.toJson(mGardens, Types.newParameterizedType(ArrayList.class, Garden.class)));
-			}
+				e.printStackTrace();
 
-			if (new File(FILES_DIR + "/gardens." + getFileExt()).length() == 0 || !new File(FILES_DIR + "/gardens." + getFileExt()).exists())
-			{
-				Toast.makeText(context, R.string.fatal_error, Toast.LENGTH_LONG).show();
-				String sendData = MoshiHelper.toJson(mGardens, Types.newParameterizedType(ArrayList.class, Garden.class));
-				Intent share = new Intent(Intent.ACTION_SEND);
-				share.setType("text/plain");
-				share.putExtra(Intent.EXTRA_TEXT, "== WARNING : PLEASE BACK UP THIS DATA == \r\n\r\n " + sendData);
-				context.startActivity(share);
+				if (new File(targetPath).length() == 0 || !new File(targetPath).exists())
+				{
+					Toast.makeText(context, R.string.fatal_error, Toast.LENGTH_LONG).show();
+					String sendData = MoshiHelper.toJson(mGardens, Types.newParameterizedType(ArrayList.class, Garden.class));
+					Intent share = new Intent(Intent.ACTION_SEND);
+					share.setType("text/plain");
+					share.putExtra(Intent.EXTRA_TEXT, "== WARNING : PLEASE BACK UP THIS DATA == \r\n\r\n " + sendData);
+					context.startActivity(share);
+				}
 			}
 		}
 	}
