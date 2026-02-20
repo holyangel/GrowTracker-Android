@@ -11,8 +11,11 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 
 import com.esotericsoftware.kryo.Kryo;
 
@@ -61,9 +64,11 @@ public class PlantListFragment extends Fragment
 
 	@Views.InjectView(R.id.recycler_view) private RecyclerView recycler;
 	@Views.InjectView(R.id.empty) private View empty;
+	@Views.InjectView(R.id.search_edit_text) private EditText searchEditText;
 
 	private ArrayList<PlantStage> filterList = null;
 	private boolean reverse = false;
+	private String searchQuery = "";
 
 	@Override public void onCreate(Bundle savedInstanceState)
 	{
@@ -129,6 +134,18 @@ public class PlantListFragment extends Fragment
 		}
 
 		recycler.setAdapter(adapter);
+
+		searchEditText.addTextChangedListener(new TextWatcher()
+		{
+			@Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+			@Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+			@Override public void afterTextChanged(Editable s)
+			{
+				searchQuery = s.toString().trim();
+				filter();
+			}
+		});
 
 		ItemTouchHelper.Callback callback = new SimpleItemTouchHelperCallback(adapter)
 		{
@@ -218,7 +235,7 @@ public class PlantListFragment extends Fragment
 
 	private boolean beingFiltered()
 	{
-		return !(filterList.size() == PlantStage.values().length);
+		return !(filterList.size() == PlantStage.values().length) || !searchQuery.isEmpty();
 	}
 
 	private synchronized void saveCurrentState()
@@ -425,11 +442,17 @@ public class PlantListFragment extends Fragment
 		adapter.setPlants(plantList);
 
 		ArrayList<String> plants = new ArrayList<>();
+		String lowerQuery = searchQuery.toLowerCase();
 		for (Plant plant : plantList)
 		{
 			if (filterList.contains(plant.getStage()))
 			{
-				plants.add(plant.getId());
+				if (lowerQuery.isEmpty()
+					|| plant.getName().toLowerCase().contains(lowerQuery)
+					|| (plant.getStrain() != null && plant.getStrain().toLowerCase().contains(lowerQuery)))
+				{
+					plants.add(plant.getId());
+				}
 			}
 		}
 
