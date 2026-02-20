@@ -440,7 +440,7 @@ public class PlantDetailsFragment extends Fragment
 			return;
 		}
 
-		if (!PermissionHelper.hasPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE))
+		if (Build.VERSION.SDK_INT < 30 && !PermissionHelper.hasPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE))
 		{
 			PermissionHelper.doPermissionCheck(this, Manifest.permission.WRITE_EXTERNAL_STORAGE, 1, getString(R.string.permission_summary));
 			return;
@@ -477,7 +477,7 @@ public class PlantDetailsFragment extends Fragment
 					}
 					else
 					{
-						if (!PermissionHelper.hasPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE))
+						if (Build.VERSION.SDK_INT < 30 && !PermissionHelper.hasPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE))
 						{
 							PermissionHelper.doPermissionCheck(PlantDetailsFragment.this, Manifest.permission.WRITE_EXTERNAL_STORAGE, 1, "Need permission");
 							return;
