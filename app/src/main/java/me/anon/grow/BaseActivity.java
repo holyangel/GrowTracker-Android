@@ -88,8 +88,7 @@ public class BaseActivity extends AppCompatActivity
 	{
 		if (item.getItemId() == android.R.id.home)
 		{
-			// ew
-			onBackPressed();
+			getOnBackPressedDispatcher().onBackPressed();
 			return true;
 		}
 

@@ -117,8 +117,36 @@ public class MainApplication extends MultiDexApplication
 
 		BackupHelper.FILES_PATH = PreferenceManager.getDefaultSharedPreferences(this).getString("backup_location", "");
 		FileManager.IMAGE_PATH = PreferenceManager.getDefaultSharedPreferences(this).getString("image_location", "");
-		if (TextUtils.isEmpty(BackupHelper.FILES_PATH)) BackupHelper.FILES_PATH = Environment.getExternalStorageDirectory().getAbsolutePath() + "/backups/GrowTracker/";
-		if (TextUtils.isEmpty(FileManager.IMAGE_PATH)) FileManager.IMAGE_PATH = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getPath() + "/GrowTracker/";
+		if (TextUtils.isEmpty(BackupHelper.FILES_PATH))
+		{
+			if (Build.VERSION.SDK_INT >= 30 && Environment.isExternalStorageManager())
+			{
+				BackupHelper.FILES_PATH = Environment.getExternalStorageDirectory().getAbsolutePath() + "/backups/GrowTracker/";
+			}
+			else if (Build.VERSION.SDK_INT >= 30)
+			{
+				BackupHelper.FILES_PATH = getExternalFilesDir(null).getAbsolutePath() + "/backups/";
+			}
+			else
+			{
+				BackupHelper.FILES_PATH = Environment.getExternalStorageDirectory().getAbsolutePath() + "/backups/GrowTracker/";
+			}
+		}
+		if (TextUtils.isEmpty(FileManager.IMAGE_PATH))
+		{
+			if (Build.VERSION.SDK_INT >= 30 && Environment.isExternalStorageManager())
+			{
+				FileManager.IMAGE_PATH = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getPath() + "/GrowTracker/";
+			}
+			else if (Build.VERSION.SDK_INT >= 30)
+			{
+				FileManager.IMAGE_PATH = getExternalFilesDir(Environment.DIRECTORY_DCIM).getAbsolutePath() + "/GrowTracker/";
+			}
+			else
+			{
+				FileManager.IMAGE_PATH = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getPath() + "/GrowTracker/";
+			}
+		}
 		new File(FileManager.IMAGE_PATH).mkdirs();
 		new File(BackupHelper.FILES_PATH).mkdirs();
 
@@ -301,7 +329,7 @@ public class MainApplication extends MultiDexApplication
 
 			AlarmManager alarmManager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
 			alarmManager.cancel(PendingIntent.getBroadcast(this, 0, backupIntent, (Build.VERSION.SDK_INT >= 31 ? PendingIntent.FLAG_MUTABLE : 0)));
-			alarmManager.setRepeating(AlarmManager.RTC, System.currentTimeMillis(), TimeUnit.DAYS.toMillis(1), PendingIntent.getBroadcast(this, 0, backupIntent, (Build.VERSION.SDK_INT >= 31 ? PendingIntent.FLAG_MUTABLE : 0)));
+			alarmManager.setInexactRepeating(AlarmManager.RTC, System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(1), TimeUnit.DAYS.toMillis(1), PendingIntent.getBroadcast(this, 0, backupIntent, (Build.VERSION.SDK_INT >= 31 ? PendingIntent.FLAG_MUTABLE : 0)));
 		}
 	}
 }

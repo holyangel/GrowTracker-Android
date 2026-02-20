@@ -62,6 +62,8 @@ import me.anon.lib.TempUnit;
 import me.anon.lib.Unit;
 import me.anon.lib.helper.AddonHelper;
 import me.anon.lib.helper.BackupHelper;
+import me.anon.lib.helper.BusHelper;
+import me.anon.lib.event.GardenChangeEvent;
 import me.anon.lib.helper.EncryptionHelper;
 import me.anon.lib.helper.MigrationHelper;
 import me.anon.lib.helper.MoshiHelper;
@@ -1099,6 +1101,8 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
 		{
 			MigrationHelper.migratePpm(getActivity());
 		}
+
+		BusHelper.getInstance().post(new GardenChangeEvent());
 	}
 
 	@Override public void onActivityResult(int requestCode, int resultCode, Intent data)

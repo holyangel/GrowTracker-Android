@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -85,9 +84,9 @@ public class PlantListFragment extends Fragment
 		return view;
 	}
 
-	@Override public void onActivityCreated(final Bundle savedInstanceState)
+	@Override public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
 	{
-		super.onActivityCreated(savedInstanceState);
+		super.onViewCreated(view, savedInstanceState);
 
 		reverse = PreferenceManager.getDefaultSharedPreferences(getActivity()).getBoolean("reverse_order", false);
 		if (savedInstanceState != null)
@@ -222,7 +221,6 @@ public class PlantListFragment extends Fragment
 	{
 		super.onResume();
 
-		Log.e("TEST", "resume");
 		filter();
 	}
 

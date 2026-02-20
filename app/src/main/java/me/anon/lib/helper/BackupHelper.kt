@@ -1,6 +1,5 @@
 package me.anon.lib.helper
 
-import android.os.Environment
 import me.anon.grow.MainApplication
 import me.anon.lib.ext.toSafeInt
 import me.anon.lib.manager.FileManager
@@ -21,7 +20,7 @@ import kotlin.collections.ArrayList
 object BackupHelper
 {
 	@JvmField
-	public var FILES_PATH = Environment.getExternalStorageDirectory().absolutePath + "/backups/GrowTracker/"
+	public var FILES_PATH = ""
 
 	@JvmStatic
 	public fun getLastBackup(): String

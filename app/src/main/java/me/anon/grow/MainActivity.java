@@ -7,8 +7,11 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.text.Html;
 import android.text.TextUtils;
 import android.view.MenuItem;
@@ -70,7 +73,26 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 			startActivity(settings);
 		}
 
-		if (!PermissionHelper.hasPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE))
+		if (Build.VERSION.SDK_INT >= 30)
+		{
+			if (!Environment.isExternalStorageManager())
+			{
+				new AlertDialog.Builder(this)
+					.setMessage(getString(R.string.permission_summary))
+					.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener()
+					{
+						@Override public void onClick(DialogInterface dialog, int which)
+						{
+							Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+							intent.setData(Uri.parse("package:" + getPackageName()));
+							startActivity(intent);
+						}
+					})
+					.setNegativeButton(R.string.cancel, null)
+					.show();
+			}
+		}
+		else if (!PermissionHelper.hasPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE))
 		{
 			PermissionHelper.doPermissionCheck(this, Manifest.permission.WRITE_EXTERNAL_STORAGE, 1, getString(R.string.permission_summary));
 		}
@@ -119,7 +141,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 	{
 		super.onActivityResult(requestCode, resultCode, data);
 
-		if (resultCode == Activity.RESULT_OK && data.hasExtra("refresh"))
+		if (resultCode == Activity.RESULT_OK && data != null && data.hasExtra("refresh"))
 		{
 			if (navigation.getMenu().findItem(selectedItem).isCheckable())
 			{
@@ -129,7 +151,10 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 			}
 		}
 
-		getSupportFragmentManager().findFragmentById(R.id.fragment_holder).onActivityResult(requestCode, resultCode, data);
+		if (getSupportFragmentManager().findFragmentById(R.id.fragment_holder) != null)
+		{
+			getSupportFragmentManager().findFragmentById(R.id.fragment_holder).onActivityResult(requestCode, resultCode, data);
+		}
 	}
 
 	@Override protected void onResume()
@@ -153,7 +178,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 	@Override protected void onDestroy()
 	{
 		super.onDestroy();
-		BusHelper.getInstance().register(this);
+		BusHelper.getInstance().unregister(this);
 	}
 
 	public void showUpdateDialog()
@@ -239,7 +264,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 				}
 			};
 
-			drawer.setDrawerListener(drawerToggle);
+			drawer.addDrawerListener(drawerToggle);
 			drawerToggle.syncState();
 		}
 	}

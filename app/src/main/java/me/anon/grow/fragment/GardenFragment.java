@@ -96,9 +96,9 @@ public class GardenFragment extends Fragment
 		return view;
 	}
 
-	@Override public void onActivityCreated(final Bundle savedInstanceState)
+	@Override public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
 	{
-		super.onActivityCreated(savedInstanceState);
+		super.onViewCreated(view, savedInstanceState);
 
 		if (savedInstanceState != null)
 		{
@@ -316,7 +316,7 @@ public class GardenFragment extends Fragment
 				SnackBar.show(getActivity(), getString(R.string.snackbar_action_add), null);
 			}
 		});
-		dialogFragment.show(getFragmentManager(), null);
+		dialogFragment.show(getChildFragmentManager(), null);
 	}
 
 	@Views.OnClick public void onNoteClick(final View view)
@@ -337,7 +337,7 @@ public class GardenFragment extends Fragment
 				SnackBar.show(getActivity(), getString(R.string.snackbar_note_add), null);
 			}
 		});
-		dialogFragment.show(getFragmentManager(), null);
+		dialogFragment.show(getChildFragmentManager(), null);
 	}
 
 	@Override public void onActivityResult(int requestCode, int resultCode, Intent data)
@@ -424,7 +424,7 @@ public class GardenFragment extends Fragment
 					((MainActivity)getActivity()).setNavigationView();
 				}
 			});
-			dialogFragment.show(getFragmentManager(), null);
+			dialogFragment.show(getParentFragmentManager(), null);
 
 			return true;
 		}
@@ -441,7 +441,7 @@ public class GardenFragment extends Fragment
 					new ExportHelper(getActivity(), processor, includeImages).exportGarden(garden);
 					return null;
 				}
-			}).show(getFragmentManager(), "export_dialog");
+			}).show(getParentFragmentManager(), "export_dialog");
 		}
 		else if (item.getItemId() == R.id.delete_garden)
 		{
