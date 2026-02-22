@@ -442,6 +442,7 @@
 	<string name="no_data">There is no data available</string>
 
 	<string name="camera_permission_summary">Camera permission is required to take photos</string>
+	<string name="notification_permission_summary">Notification permission is required to show import and export progress</string>
 	<string name="settings_backup_management_title">Backup management</string>
 	<string name="settings_backup_location_title">Backup storage location</string>
 	<string name="settings_backup_location_summary" formatted="true">Backup storage location, currently &lt;b&gt;%s&lt;/b&gt;</string>

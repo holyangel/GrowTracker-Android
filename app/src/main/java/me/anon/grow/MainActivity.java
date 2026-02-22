@@ -97,6 +97,11 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 			PermissionHelper.doPermissionCheck(this, Manifest.permission.WRITE_EXTERNAL_STORAGE, 1, getString(R.string.permission_summary));
 		}
 
+		if (Build.VERSION.SDK_INT >= 33 && !PermissionHelper.hasPermission(this, Manifest.permission.POST_NOTIFICATIONS))
+		{
+			PermissionHelper.doPermissionCheck(this, Manifest.permission.POST_NOTIFICATIONS, 2, getString(R.string.notification_permission_summary));
+		}
+
 		setContentView(R.layout.main_view);
 		Views.inject(this);
 
