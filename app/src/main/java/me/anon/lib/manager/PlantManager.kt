@@ -289,7 +289,13 @@ class PlantManager private constructor()
 							{
 								FileManager.getInstance().copyFile(targetPath, bak.absolutePath)
 							}
-							tempFile.renameTo(target)
+							target.delete()
+							if (!tempFile.renameTo(target))
+							{
+								// Fallback: copy temp to target and delete temp
+								FileManager.getInstance().copyFile(tempPath, targetPath)
+								tempFile.delete()
+							}
 						}
 						catch (e: Exception)
 						{
